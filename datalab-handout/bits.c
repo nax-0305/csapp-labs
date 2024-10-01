@@ -178,7 +178,7 @@ int isTmax(int x) {
 int allOddBits(int x) {
   int i = 0xAA << 8 | 0xAA;
   int j = i << 16 | i;
-  return !(x & j ^ j);
+  return !((x & j) ^ j);
 }
 /* 
  * negate - return -x 
@@ -201,7 +201,8 @@ int negate(int x) {
  *   Rating: 3
  */
 int isAsciiDigit(int x) {
-  return 2;
+  // 38和39不用单独拎出来，因为低八位的高七位是一样的，不同于3a、3b...
+  return !((x & ~1) ^ 0x38) | !((x & ~0x7) ^ 0x30);
 }
 /* 
  * conditional - same as x ? y : z 
@@ -211,7 +212,9 @@ int isAsciiDigit(int x) {
  *   Rating: 3
  */
 int conditional(int x, int y, int z) {
-  return 2;
+  // 核心就是要使!x，变成全0和全1
+  // 再再者就是，让对方的运算为0
+  return (y & ~(~(!x) + 1)) | (z & (~(!x) + 1));
 }
 /* 
  * isLessOrEqual - if x <= y  then return 1, else return 0 
@@ -219,9 +222,18 @@ int conditional(int x, int y, int z) {
  *   Legal ops: ! ~ & ^ | + << >>
  *   Max ops: 24
  *   Rating: 3
+
  */
 int isLessOrEqual(int x, int y) {
-  return 2;
+  int xh = x >> 31 & 1;
+  int yh = y >> 31 & 1;
+  int t = ~(1 << 31);
+  int xl31 = x & t;
+  int yl31 = y & t; 
+  // 首先判断y-x的最高位，如果是0，那么y>x，最高位取反返回1；否则x>y，最高位取反返回0。符合题意
+  // 再判断低31位，yl31-xl31的最高位，如果
+  // return !(x ^ y) | (!((xh + ~yh + 1) >> 31) & !((xl31 + ~yl31 + 1) >> 31));
+  return (!(xh ^ yh) & (!(xl31 ^ yl31) | (xl31 + ~yl31 + 1) >> 31)) | ((xh ^ yh) & xh);
 }
 //4
 /* 
