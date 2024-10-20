@@ -1,0 +1,3 @@
+phase_1 = "Border relations with Canada have never been better."
+phase_2 = "1 2 4 8 16 32"
+phase_3 = "0 207" | "1 311" 一共有七个答案
